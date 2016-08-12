@@ -83,6 +83,18 @@ class Camera(ids_core.Camera):
             if value and messages[key]:
                 self.logger.warning("%s (%d instances)" % (messages[key], value))
 
+    def trigger(self, *args, **kwargs):
+        """
+        """
+        try:
+            super(Camera, self).trigger(*args, **kwargs)
+        except:
+            print "Something happened #MSFT"
+        # while True:
+        #     try:
+        #         return super(Camera, self).next(*args, **kwargs)
+        #     except ids_core.IDSCaptureStatus:
+        #         self._check_capture_status()
     def next(self, *args, **kwargs):
         """
         Get the next available image from the camera.

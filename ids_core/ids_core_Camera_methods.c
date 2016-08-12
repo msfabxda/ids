@@ -180,10 +180,10 @@ static PyObject *ids_core_Camera_close(ids_core_Camera *self, PyObject *args, Py
 static int get_next_image(ids_core_Camera *self, char **mem, INT *image_id, int timeout) {
     int ret;
 
-	ret = is_CaptureVideo(self->handle, IS_GET_LIVE);
+//	ret = is_CaptureVideo(self->handle, IS_GET_LIVE);
 
-	if (ret == FALSE)
-    	is_FreezeVideo(self->handle, IS_DONT_WAIT);
+//	if (ret == FALSE)
+//    	is_FreezeVideo(self->handle, IS_DONT_WAIT);
 
     ret = is_WaitForNextImage(self->handle, timeout, mem, image_id);
 
@@ -265,6 +265,11 @@ static PyObject *ids_core_Camera_next_save(ids_core_Camera *self, PyObject *args
     return info;
 }
 
+static PyObject *ids_core_Camera_trigger(ids_core_Camera *self, PyObject *args, PyObject *kwds) {
+    is_FreezeVideo(self->handle, IS_DONT_WAIT);
+//    is_ForceTrigger(self->handle);
+    return Py_None;
+}
 static PyObject *ids_core_Camera_next(ids_core_Camera *self, PyObject *args, PyObject *kwds) {
 	static char *kwlist[] = {"timeout"};    
 	int ret;
@@ -276,7 +281,7 @@ static PyObject *ids_core_Camera_next(ids_core_Camera *self, PyObject *args, PyO
 
 	printf(args);
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &timeout))
+	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist, &timeout))
 		timeout = IMG_TIMEOUT;
 
     ret = get_next_image(self, &mem, &image_id, timeout);
@@ -423,6 +428,14 @@ PyMethodDef ids_core_Camera_methods[] = {
         "    IDSError: An unknown error occured in the uEye SDK."
         "    NotImplementedError: The current color format cannot be converted\n"
         "        to a numpy array."
+    },
+    {"trigger", (PyCFunction) ids_core_Camera_trigger, METH_VARARGS | METH_KEYWORDS,
+        "next() -> \n\n"
+        "Triggers the camera in software trigger mode"
+        "Returns:\n"
+        "    Nothing\n"
+        "Raises:\n"
+        "    Nothing\n"
     },
     {NULL}
 };

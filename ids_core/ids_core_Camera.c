@@ -30,6 +30,7 @@
 #include <structmember.h>
 #include <ueye.h>
 #include "ids_core.h"
+#include <stdio.h>
 
 static void ids_core_Camera_dealloc(ids_core_Camera *self);
 static int ids_core_Camera_init(ids_core_Camera *self, PyObject *args, PyObject *kwds);
@@ -151,7 +152,7 @@ static int init_cam_info(ids_core_Camera *self) {
 }
 
 static int ids_core_Camera_init(ids_core_Camera *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"handle", "color", NULL};
+    static char *kwlist[] = {"handle", "color", "trigger_delay", NULL};
     self->handle = 0;
     self->bitdepth = 0;
     self->color = IS_CM_RGB8_PACKED;
@@ -159,12 +160,14 @@ static int ids_core_Camera_init(ids_core_Camera *self, PyObject *args, PyObject 
     self->ready = NOT_READY;
     LIST_INIT(&self->mem_list);
 
+    int trigger_delay = 15;
+
     /*
      * This means the definition is:
      * def __init__(self, handle=0, color=ids_core.COLOR_RGB8):
      */
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ii", kwlist,
-            &self->handle, &self->color)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iii", kwlist,
+            &self->handle, &self->color, &trigger_delay)) {
         return -1;
     }
 
@@ -200,6 +203,32 @@ static int ids_core_Camera_init(ids_core_Camera *self, PyObject *args, PyObject 
     if (ret) {
         return -1;
     }
+
+    INT triggerMode = IS_SET_TRIGGER_SOFTWARE;
+//    INT triggerMode = IS_SET_TRIGGER_OFF;
+//    INT triggerMode = IS_SET_TRIGGER_HI_LO;
+    int result = is_SetExternalTrigger(self->handle, triggerMode);
+
+    if (result == IS_SUCCESS)
+    {
+        printf("success in setting trigger\n");
+    }
+    else
+    {
+        printf("failed in setting trigger with error\n");
+    }
+
+    int trigdelayresult = is_SetTriggerDelay(self->handle, trigger_delay);
+
+    if (trigdelayresult == IS_SUCCESS)
+    {
+        printf("successfully set trigger delay %i\n", trigger_delay);
+    }
+    else
+    {
+        printf("something happened #MSFT\n");
+    }
+
 
     self->ready = READY;
 
